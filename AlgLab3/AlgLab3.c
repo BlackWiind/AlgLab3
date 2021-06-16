@@ -20,7 +20,7 @@ int theight(Tree* t);                                                        //В
 int tmiddleh(Tree* t, int l);                                                //Средняя высота дерева
 int csumm(Tree* t);                                                          //Контрольная сумма
 void ltr(Tree* t);                                                           //Обход слева направо
-Tree* isdp(int l, int r, int* A);                                            //Идеально сбалансираванное дерево
+void Add2b(Tree** t, int d);                                                 //Двоичное Б-дерево поиска 
 void AddAVL(Tree** t, int d);                                                //Добавление новой вершины в АВЛ дерево
 void LL(Tree** t);                                                            //Повороты
 void LR(Tree** t);
@@ -31,7 +31,7 @@ Tree* root1 = NULL; *root2 = NULL;
 
 int* A;
 int n;
-bool grown;
+bool grown , HR, VR;
 
 int main() {
 	setlocale(LC_ALL, "rus");
@@ -44,15 +44,16 @@ int main() {
 	for (int i = 0; i < n; i++) {
 		A[i] = rand() % 1000;
 		AddAVL(&root2, A[i]);
+		Add2b(&root1, A[i]);
 	}
-	root1 = isdp(0, n - 1, A);
+	
 	printf("\n");
 	printf("АВЛ дерево поиска:\n");
-	ltr(root2);
+	ltr(root1);
 	printf("\n");
 	printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 	printf("+++++++++++|Размер|Высота|Средняя высота|контр. сумма|++++++++++++++++++++++++++++++++\n");
-	printf("+ИСДП %10d %7d %10.2f %15d\n", tsize(root1), theight(root1), (double)tmiddleh(root1, 1) / tsize(root1), csumm(root1));
+	printf("++ДБД %10d %7d %10.2f %15d\n", tsize(root1), theight(root1), (double)tmiddleh(root1, 1) / tsize(root1), csumm(root1));
 	printf("++АВЛ %10d %7d %10.2f %15d\n", tsize(root2), theight(root2), (double)tmiddleh(root2, 1) / tsize(root2), csumm(root2));
 	printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 	getch();
@@ -205,5 +206,59 @@ void AddAVL(Tree** t, int d) {
 					else if ((*t)->right->balance > 0) { RR(&(*t)); grown = false; }
 					else { RL(&(*t)); grown = false; }
 				}
+			}
+}
+
+void Add2b(Tree** t, int d) {
+	Tree* q;
+	if ((*t) == NULL) {
+		(*t) = (Tree*)malloc(sizeof(Tree));
+		(*t)->data = d;
+		(*t)->left = (*t)->right = NULL;
+		(*t)->balance = 0;
+		VR = true;
+	}
+	else
+		if ((*t)->data >= d) {
+			Add2b(&((*t)->left), d);
+			if (VR == true) {
+				if ((*t)->balance == 0) {
+					q = (*t)->left;
+					(*t)->left = q->right;
+					q->right = (*t);
+					(*t) = q;
+					q->balance = 1;
+					VR = false;
+					HR = true;
+				}
+				else {
+					(*t)->balance = 0;
+					VR = true;
+					HR = false;
+				}
+			}
+			else HR = false;
+		}
+		else
+			if ((*t)->data < d) {
+				Add2b(&((*t)->right), d);
+				if (VR == true) {
+					(*t)->balance = 1;
+					VR = false;
+					HR = true;
+				}
+				else if (HR == true) {
+					if ((*t)->balance == 1) {
+						q = (*t)->right;
+						(*t)->balance = 0;
+						q->balance = 0;
+						(*t)->right = q->left;
+						q->left = (*t);
+						(*t) = q;
+						VR = true;
+						HR = false;
+					}
+					else HR = false;
+				} 
 			}
 }
